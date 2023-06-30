@@ -2,49 +2,26 @@ require('dotenv').config()
 const axios = require('axios')
 const modelMap = require('./modelMap')
 const XLSX = require('xlsx')
+const requestBody = require('./requestBody')
 
 async function sendRequests () {
   const workbook = XLSX.utils.book_new()
   const worksheet = XLSX.utils.json_to_sheet([])
   // Define custom headers
-  const headers = ['VIN', 'Year', 'Model', 'Exterior', 'Interior', 'Accessory Code', 'PIOs', 'Invoice Total', 'MSRP Total']
+  const headers = ['VIN', 'Year', 'Model', 'Ext', 'Int', 'Acc', 'piOs', 'Invoice', 'MSRP']
 
   // Add headers to the worksheet
   XLSX.utils.sheet_add_aoa(worksheet, [headers])
 
   const vinList = []
   for (const year of ['2023', '2024']) {
+    requestBody.year = year // Update the year in the requestBody for each iteration
+
     for (const model in modelMap) {
       const item = modelMap[model]
+      requestBody.series = item // Update the series in the requestBody for each iteration
 
       try {
-        const requestBody = {
-          dealerCode: 'CA317',
-          year,
-          series: item,
-          inDealer: 'CA317',
-          vin: '',
-          extCol: '',
-          intCol: '',
-          optGrp: '',
-          pio: '',
-          radius: '',
-          status: 'DS',
-          region: 'WE',
-          district: 'W03',
-          sortOrder: '',
-          sortBy: '',
-          pageSize: 100,
-          pageNum: 1,
-          tradePartner: [
-            {
-              tradedealerCode: 'CA317',
-              tradedealerName: 'CA317-Premier Kia of Carlsbad',
-              flag: 1
-            }
-          ]
-        }
-
         const response = await axios.post(process.env.getVehicleLocatorEndpoint, requestBody, {
           headers: {
             Authorization: `Bearer ${process.env.BEARER_TOKEN}`
@@ -76,7 +53,6 @@ async function sendRequests () {
               const { vin, year, model, exterior, interior, accessoryCode, piOs, invoiceTotal, msrpTotal } = vehicleDetailsData
               const vehicleDetails = [vin, year, model, exterior, interior, accessoryCode, piOs, invoiceTotal, msrpTotal]
 
-              // const vehicleDetails = Object.values(vehicleDetailsData)
               XLSX.utils.sheet_add_aoa(worksheet, [vehicleDetails], { origin: -1, originDate: new Date() })
             } catch (error) {
               console.error(`Error in new query for VIN ${vin}:`, error.message)
@@ -103,9 +79,7 @@ async function sendRequests () {
     style: 'Table Style Light 1', // Choose the desired table style
     autoFilter: worksheet['!autofilter']
   }
-
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Data')
-
   const excelFileName = 'output.xlsx'
   XLSX.writeFile(workbook, excelFileName)
   console.log(`Data exported to ${excelFileName}`)

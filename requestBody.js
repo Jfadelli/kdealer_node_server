@@ -1,7 +1,7 @@
 const requestBody = {
   dealerCode: 'CA317',
-  year: '2023', // will be var in next version
-  series: item, // first var to deal with in iterating data
+  year: '',
+  series: '',
   inDealer: 'CA317',
   vin: '',
   extCol: '',
@@ -24,3 +24,5 @@ const requestBody = {
     }
   ]
 }
+
+module.exports = requestBody
