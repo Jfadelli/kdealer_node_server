@@ -8,12 +8,11 @@ async function sendRequests () {
   const workbook = XLSX.utils.book_new()
   const worksheet = XLSX.utils.json_to_sheet([])
   // Define custom headers
-  const headers = ['VIN', 'Year', 'Model', 'Ext', 'Int', 'Acc', 'piOs', 'Invoice', 'MSRP']
+  const headers = ['VIN', 'Year', 'Model', 'Trim', 'Ext', 'Int', 'Acc', 'piOs', 'Invoice', 'MSRP']
 
   // Add headers to the worksheet
   XLSX.utils.sheet_add_aoa(worksheet, [headers])
 
-  const vinList = []
   for (const year of ['2023', '2024']) {
     requestBody.year = year // Update the year in the requestBody for each iteration
 
@@ -35,8 +34,6 @@ async function sendRequests () {
           for (const vehicle of vehLocatorDetails) {
             const row = Object.values(vehicle)
             const vin = row[5]
-            vinList.push(vin)
-
             const requestBody2 = {
               vin,
               dealerCode: 'CA317'
@@ -51,7 +48,22 @@ async function sendRequests () {
               const vehicleDetailsData = vehicleDetailsResponse.data
 
               const { vin, year, model, exterior, interior, accessoryCode, piOs, invoiceTotal, msrpTotal } = vehicleDetailsData
-              const vehicleDetails = [vin, year, model, exterior, interior, accessoryCode, piOs, invoiceTotal, msrpTotal]
+
+              // Strip characters before and including a colon in the model
+              const strippedModel = model.substring(model.lastIndexOf(':') + 1).trim()
+
+              // Split the strippedModel at spaces into an array
+              const modelSplitString = strippedModel.split(' ')
+
+              // Remove the first item from the array
+              const modelA = modelSplitString.shift()
+
+              // Join the remaining elements of the array into a string separated by spaces
+              const trim = modelSplitString.join(' ')
+
+              console.log(modelA, trim)
+
+              const vehicleDetails = [vin, year, modelA, trim, exterior, interior, accessoryCode, piOs, invoiceTotal, msrpTotal]
 
               XLSX.utils.sheet_add_aoa(worksheet, [vehicleDetails], { origin: -1, originDate: new Date() })
             } catch (error) {
