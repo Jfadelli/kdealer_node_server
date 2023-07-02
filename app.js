@@ -1,10 +1,6 @@
 require('dotenv').config()
 const axios = require('axios')
-<<<<<<< HEAD
 const modelMap = require('./modelMapTest')
-=======
-const modelMap = require('./modelMap')
->>>>>>> ca27408e2af26883bb042a136e157839dc10a1e2
 const XLSX = require('xlsx')
 const requestBody = require('./requestBody')
 
@@ -17,10 +13,7 @@ async function sendRequests () {
   // Add headers to the worksheet
   XLSX.utils.sheet_add_aoa(worksheet, [headers])
 
-<<<<<<< HEAD
   const vinList = []
-=======
->>>>>>> ca27408e2af26883bb042a136e157839dc10a1e2
   for (const year of ['2023', '2024']) {
     requestBody.year = year // Update the year in the requestBody for each iteration
 
@@ -42,11 +35,8 @@ async function sendRequests () {
           for (const vehicle of vehLocatorDetails) {
             const row = Object.values(vehicle)
             const vin = row[5]
-<<<<<<< HEAD
             vinList.push(vin)
 
-=======
->>>>>>> ca27408e2af26883bb042a136e157839dc10a1e2
             const requestBody2 = {
               vin,
               dealerCode: 'CA317'
@@ -105,17 +95,9 @@ async function sendRequests () {
     autoFilter: worksheet['!autofilter']
   }
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Data')
-<<<<<<< HEAD
   const excelFileName = 'outputTest.xlsx'
-=======
-  const excelFileName = 'output.xlsx'
->>>>>>> ca27408e2af26883bb042a136e157839dc10a1e2
   XLSX.writeFile(workbook, excelFileName)
   console.log(`Data exported to ${excelFileName}`)
 }
 
-<<<<<<< HEAD
 sendRequests()
-=======
-sendRequests()
->>>>>>> ca27408e2af26883bb042a136e157839dc10a1e2
