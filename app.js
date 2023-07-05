@@ -1,16 +1,25 @@
 require('dotenv').config()
-const { updateBearerToken } = require('./envUtils');
+// const { updateBearerToken } = require('./envUtils')
+const { fetchBearerToken } = require('./fetchBearerToken')
+
 const axios = require('axios')
 const modelMap = require('./modelMap')
 const XLSX = require('xlsx')
 const requestBody = require('./requestBody')
-const bearerToken = process.env.BEARER_TOKEN
+// const bearerToken = process.env.BEARER_TOKEN
 const vehicleLocatorEndpoint = process.env.VEHICLE_LOCATOR_ENDPOINT
 const vehicleDetailsEndpoint = process.env.VEHICLE_DETAILS_ENDPOINT
 
-async function sendRequests() {
+async function sendRequests () {
   const workbook = XLSX.utils.book_new()
   const worksheet = XLSX.utils.json_to_sheet([])
+
+  // Fetch the bearer token
+  const bearerToken = await fetchBearerToken()
+  console.log('2', bearerToken)
+  // Update the bearer token in the environment variables
+  // updateBearerToken(bearerToken)
+
   // Define custom headers
   const headers = ['VIN', 'Year', 'Model', 'Trim', 'Ext', 'Int', 'Acc', 'piOs', 'Invoice', 'MSRP']
 
@@ -70,12 +79,10 @@ async function sendRequests() {
 
               console.log(modelA, trim)
 
-              const modifiedVin =`\=HYPERLINK("http://localhost:3000/getMonroney/${vin}", "${vin}")`
+              const modifiedVin = `=HYPERLINK("https://get-monroney-server-43d02c80534a.herokuapp.com/getMonroney/${vin}", "${vin}")`
               const vehicleDetails = [modifiedVin, year, modelA, trim, exterior, interior, accessoryCode, piOs, invoiceTotal, msrpTotal]
 
-
               XLSX.utils.sheet_add_aoa(worksheet, [vehicleDetails], { origin: -1, originDate: new Date() })
-              
             } catch (error) {
               console.error(`Error in new query for VIN ${vin}:`, error.message)
             }
@@ -105,8 +112,6 @@ async function sendRequests() {
   const excelFileName = 'output.xlsx'
   XLSX.writeFile(workbook, excelFileName)
   console.log(`Data exported to ${excelFileName}`)
-  
 }
 
 sendRequests()
-

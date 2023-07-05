@@ -1,7 +1,7 @@
 require('dotenv').config()
-const axios = require('axios')
 const puppeteer = require('puppeteer')
 const loginEndpoint = process.env.LOGIN_ENDPOINT
+const carDetailsEndpoint = process.env.CAR_DETAILS_ENDPOINT
 
 const username = process.env.USERNAME
 const password = process.env.PASSWORD
