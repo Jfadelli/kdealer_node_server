@@ -2,12 +2,10 @@
   "dependencies": {
     "axios": "^1.4.0",
     "dotenv": "^16.3.1",
-<<<<<<< HEAD
     "fs": "^0.0.1-security",
-=======
->>>>>>> ca27408e2af26883bb042a136e157839dc10a1e2
     "puppeteer": "^20.7.3",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "xlsx-populate": "^1.21.0"
   },
   "devDependencies": {
     "eslint": "^8.43.0",

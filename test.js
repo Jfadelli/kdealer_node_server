@@ -3,8 +3,11 @@ const axios = require('axios')
 const modelMap = require('./modelMapTest')
 const XLSX = require('xlsx')
 const requestBody = require('./requestBody')
+const bearerToken = process.env.BEARER_TOKEN
+const vehicleLocatorEndpoint = process.env.VEHICLE_LOCATOR_ENDPOINT
+const vehicleDetailsEndpoint = process.env.VEHICLE_DETAILS_ENDPOINT
 
-async function sendRequests () {
+async function sendRequests() {
   const workbook = XLSX.utils.book_new()
   const worksheet = XLSX.utils.json_to_sheet([])
   // Define custom headers
@@ -22,9 +25,9 @@ async function sendRequests () {
       requestBody.series = item // Update the series in the requestBody for each iteration
 
       try {
-        const response = await axios.post(process.env.getVehicleLocatorEndpoint, requestBody, {
+        const response = await axios.post(vehicleLocatorEndpoint, requestBody, {
           headers: {
-            Authorization: `Bearer ${process.env.BEARER_TOKEN}`
+            Authorization: `Bearer ${bearerToken}`
           }
         })
 
@@ -43,9 +46,9 @@ async function sendRequests () {
             }
 
             try {
-              const vehicleDetailsResponse = await axios.post(process.env.getVehicleDetails, requestBody2, {
+              const vehicleDetailsResponse = await axios.post(vehicleDetailsEndpoint, requestBody2, {
                 headers: {
-                  Authorization: `Bearer ${process.env.BEARER_TOKEN}`
+                  Authorization: `Bearer ${bearerToken}`
                 }
               })
               const vehicleDetailsData = vehicleDetailsResponse.data
@@ -66,9 +69,12 @@ async function sendRequests () {
 
               console.log(modelA, trim)
 
-              const vehicleDetails = [vin, year, modelA, trim, exterior, interior, accessoryCode, piOs, invoiceTotal, msrpTotal]
+              const modifiedVin =`=HYPERLINK("http://localhost:3000/getMonroney/${vin}", "${vin}")`
+              const vehicleDetails = [modifiedVin, year, modelA, trim, exterior, interior, accessoryCode, piOs, invoiceTotal, msrpTotal]
+
 
               XLSX.utils.sheet_add_aoa(worksheet, [vehicleDetails], { origin: -1, originDate: new Date() })
+              
             } catch (error) {
               console.error(`Error in new query for VIN ${vin}:`, error.message)
             }
@@ -98,6 +104,8 @@ async function sendRequests () {
   const excelFileName = 'outputTest.xlsx'
   XLSX.writeFile(workbook, excelFileName)
   console.log(`Data exported to ${excelFileName}`)
+  
 }
 
 sendRequests()
+
