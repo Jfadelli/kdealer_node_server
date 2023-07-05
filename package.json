@@ -3,7 +3,8 @@
     "axios": "^1.4.0",
     "dotenv": "^16.3.1",
     "puppeteer": "^20.7.3",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "xlsx-populate": "^1.21.0"
   },
   "devDependencies": {
     "eslint": "^8.43.0",

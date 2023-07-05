@@ -1,17 +1,17 @@
 require('dotenv').config()
 const axios = require('axios')
 const modelMap = require('./modelMapTest')
-const XLSX = require('xlsx')
+const XlsxPopulate = require('xlsx-populate')
 const requestBody = require('./requestBody')
 
 async function sendRequests () {
-  const workbook = XLSX.utils.book_new()
-  const worksheet = XLSX.utils.json_to_sheet([])
+  const workbook = await XlsxPopulate.fromBlankAsync()
+  const worksheet = workbook.sheet(0)
   // Define custom headers
   const headers = ['VIN', 'Year', 'Model', 'Trim', 'Ext', 'Int', 'Acc', 'piOs', 'Invoice', 'MSRP']
 
   // Add headers to the worksheet
-  XLSX.utils.sheet_add_aoa(worksheet, [headers])
+  worksheet.cell('A1').value(headers)
 
   const vinList = []
   for (const year of ['2023', '2024']) {
@@ -32,7 +32,8 @@ async function sendRequests () {
         if (responseData.msgRet.msgType === 'S') {
           const vehLocatorDetails = response.data.vehLocatorDetails
 
-          for (const vehicle of vehLocatorDetails) {
+          for (let rowIndex = 0; rowIndex < vehLocatorDetails.length; rowIndex++) {
+            const vehicle = vehLocatorDetails[rowIndex]
             const row = Object.values(vehicle)
             const vin = row[5]
             vinList.push(vin)
@@ -64,11 +65,17 @@ async function sendRequests () {
               // Join the remaining elements of the array into a string separated by spaces
               const trim = modelSplitString.join(' ')
 
-              console.log(modelA, trim)
-
               const vehicleDetails = [vin, year, modelA, trim, exterior, interior, accessoryCode, piOs, invoiceTotal, msrpTotal]
 
-              XLSX.utils.sheet_add_aoa(worksheet, [vehicleDetails], { origin: -1, originDate: new Date() })
+              // Set the hyperlink formula for the VIN cell
+              worksheet
+                .cell(`A${rowIndex + 2}`)
+                .formula(`=HYPERLINK("localhost:3000/getMonroney${vin}", "${vin}")`)
+
+              // Set the values for other cells in the row
+              for (let colIndex = 0; colIndex < vehicleDetails.length; colIndex++) {
+                worksheet.cell(XlsxPopulate.utils.columnNumberToName(colIndex + 2) + (rowIndex + 2)).value(vehicleDetails[colIndex])
+              }
             } catch (error) {
               console.error(`Error in new query for VIN ${vin}:`, error.message)
             }
@@ -80,23 +87,12 @@ async function sendRequests () {
     }
   }
 
-  // Set the autofilter and table properties
-  const range = XLSX.utils.decode_range(worksheet['!ref'])
-  const tableRange = XLSX.utils.encode_range(range)
-  worksheet['!autofilter'] = { ref: tableRange }
+  // Auto-fit column widths
+  worksheet.column('A').width(20)
+  worksheet.columns('B:K').width(10)
 
-  worksheet['!ref'] = `${tableRange}`
-  worksheet['!ref'] = worksheet['!ref'].replace(/([A-Z]+)$/, '1:$1')
-
-  // Apply table style
-  worksheet['!table'] = {
-    ref: tableRange,
-    style: 'Table Style Light 1', // Choose the desired table style
-    autoFilter: worksheet['!autofilter']
-  }
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'Data')
   const excelFileName = 'outputTest.xlsx'
-  XLSX.writeFile(workbook, excelFileName)
+  await workbook.toFileAsync(excelFileName)
   console.log(`Data exported to ${excelFileName}`)
 }
 
