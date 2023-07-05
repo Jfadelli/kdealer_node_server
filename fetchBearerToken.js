@@ -31,8 +31,6 @@ async function fetchBearerToken () {
 
       if (authHeader) {
         bearerToken = authHeader[1].replace('Bearer ', '')
-        console.log(bearerToken)
-
         return bearerToken
       }
     }
