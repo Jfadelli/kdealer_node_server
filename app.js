@@ -16,12 +16,9 @@ async function sendRequests () {
 
   // Fetch the bearer token
   const bearerToken = await fetchBearerToken()
-  console.log('2', bearerToken)
-  // Update the bearer token in the environment variables
-  // updateBearerToken(bearerToken)
 
   // Define custom headers
-  const headers = ['VIN', 'Year', 'Model', 'Trim', 'Ext', 'Int', 'Acc', 'piOs', 'Invoice', 'MSRP']
+  const headers = ['VIN', 'Status', 'Year', 'Model', 'Trim', 'Ext', 'Int', 'Acc', 'MSRP', 'piOs']
 
   // Add headers to the worksheet
   XLSX.utils.sheet_add_aoa(worksheet, [headers])
@@ -54,7 +51,8 @@ async function sendRequests () {
               vin,
               dealerCode: 'CA317'
             }
-
+            const status = vehicle.statusDesc
+            const pioDesc = vehicle.pioDesc
             try {
               const vehicleDetailsResponse = await axios.post(vehicleDetailsEndpoint, requestBody2, {
                 headers: {
@@ -63,7 +61,7 @@ async function sendRequests () {
               })
               const vehicleDetailsData = vehicleDetailsResponse.data
 
-              const { vin, year, model, exterior, interior, accessoryCode, piOs, invoiceTotal, msrpTotal } = vehicleDetailsData
+              const { vin, year, model, exterior, interior, accessoryCode, msrpTotal } = vehicleDetailsData
 
               // Strip characters before and including a colon in the model
               const strippedModel = model.substring(model.lastIndexOf(':') + 1).trim()
@@ -80,7 +78,7 @@ async function sendRequests () {
               console.log(modelA, trim)
 
               const modifiedVin = `=HYPERLINK("https://get-monroney-server-43d02c80534a.herokuapp.com/getMonroney/${vin}", "${vin}")`
-              const vehicleDetails = [modifiedVin, year, modelA, trim, exterior, interior, accessoryCode, piOs, invoiceTotal, msrpTotal]
+              const vehicleDetails = [modifiedVin, status, year, modelA, trim, exterior, interior, accessoryCode, msrpTotal, pioDesc]
 
               XLSX.utils.sheet_add_aoa(worksheet, [vehicleDetails], { origin: -1, originDate: new Date() })
             } catch (error) {

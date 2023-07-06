@@ -9,7 +9,7 @@ const requestBody = {
   optGrp: '',
   pio: '',
   radius: '',
-  status: 'DS',
+  status: '',
   region: 'WE',
   district: 'W03',
   sortOrder: '',
